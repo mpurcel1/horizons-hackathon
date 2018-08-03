@@ -8,10 +8,14 @@ import {
   TextInput,
   ListView,
   Alert,
-  Button
+  Button,
+  Image
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import axios from 'axios';
+import Confetti from 'react-native-confetti';
+import MakeItRain from "react-native-make-it-rain";
+import SwipeCards from 'react-native-swipe-cards';
 
 
 
@@ -55,25 +59,26 @@ class RegisterScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
+        <Text style={[styles.textBig, {marginBottom: 20}]}>Register</Text>
         <TextInput
-          style={{height:40,width:100}}
+          style={{height:30, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
           placeholder='Enter your username'
           onChangeText={(text)=>this.setState({username:text})}
         />
         <TextInput
-          style={{height:40, width:100}}
+          style={{height:30, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
           secureTextEntry={true}
           placeholder='Enter your password'
           onChangeText={(text)=>this.setState({password:text})}
         />
         <TextInput
-          style={{height:40, width:100}}
+          style={{height:30, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
           secureTextEntry={true}
           placeholder='Enter link to your resume'
           onChangeText={(text)=>this.setState({resume:text})}
         />
-        <TouchableOpacity onPress={this.register.bind(this)} style={styles.button, styles.buttonRed}>
-          <Text style={styles.textBig}>Submit</Text>
+        <TouchableOpacity onPress={this.register.bind(this)} style={styles.button, {padding: 4, marginTop: 17, backgroundColor: '#FB6567', width: '40%', borderRadius: 360}}>
+          <Text style={styles.buttonLabel}>Submit</Text>
         </TouchableOpacity>
       </View>
     )
@@ -89,7 +94,7 @@ class LoginScreen extends React.Component {
     }
   }
   static navigationOptions = {
-    title: 'Login'
+    title: 'Hinder'
   };
 
   login(username,password){
@@ -118,6 +123,9 @@ class LoginScreen extends React.Component {
   }
 
   componentDidMount(){
+    if (this._confettiView) {
+      this._confettiView.startConfetti();
+    }
     AsyncStorage.getItem('user')
       .then(result => {
         var parsedResult = JSON.parse(result);
@@ -146,36 +154,120 @@ class LoginScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.textBig}>Login to Hinder!</Text>
+        <Confetti untilStopped={true} ref={(node)=> this._confettiView = node}/>
+        <MakeItRain numMoneys={30} moneyDimensions={{width: 100, height: 50}}/>
+        <Text style={[styles.textBig, {marginBottom: 20}]}>Hinder!</Text>
         <TextInput
-          style={{height:40, width:200}}
+          style={{height:30, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
           placeholder='Enter your username'
           onChangeText={(text)=>this.setState({username:text})}
         />
         <TextInput
-          style={{height:40, width:200}}
+          style={{height:30, width:250,backgroundColor:'white' , margin:5, textAlign:'center', borderRadius: 15}}
           secureTextEntry={true}
           placeholder='Enter your password'
           onChangeText={(text)=>this.setState({password:text})}
         />
-        <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, styles.buttonGreen]}>
-          <Text style={styles.buttonLabel}>Tap to Login</Text>
+        <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 10}}>
+        <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, {backgroundColor: "#A9A9A9", width: '35%', borderRadius: 360}]}>
+          <Text style={styles.buttonLabel}>Login</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={ () => {this.register()} }>
-          <Text style={styles.buttonLabel}>Tap to Register</Text>
+        <TouchableOpacity style={[styles.button, {backgroundColor: '#FB6567', width: '35%', borderRadius: 360}]} onPress={ () => {this.register()} }>
+          <Text style={styles.buttonLabel}>Register</Text>
         </TouchableOpacity>
+        </View>
       </View>
     )
   }
 }
-class UserScreen extends React.Component {
-  render(){
-    return (
-      <View></View>
-    )
-  }
+
+class Card extends React.Component {
+ constructor(props) {
+   super(props);
+ }
+
+ render() {
+   return (
+     <View style={[styles.card, {backgroundColor: 'blue'}]}>
+       <Text>{this.props.company}</Text>
+       <Text>{this.props.title}</Text>
+       <Text>{this.props.description}</Text>
+       <Image source={{uri:this.props.logo}} style={{width:70,height:70}}/>
+     </View>
+   )
+ }
 }
 
+class NoMoreCards extends React.Component {
+ constructor(props) {
+   super(props);
+ }
+
+ render() {
+   return (
+     <View>
+       <Text style={styles.noMoreCardsText}>No more cards</Text>
+     </View>
+   )
+ }
+}
+
+class SwipeScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      cards: [],
+    };
+  }
+
+ componentDidMount() {
+   fetch('http://localhost:1337/alljobs', {
+     method: 'GET',
+     })
+   .then((response) => response.json())
+   .then((responseJson) => {
+       if (responseJson) {
+         this.setState({cards: responseJson})
+       } else {
+         alert("Login failed, try again")
+         this.props.navigation.navigate('Login')
+       }
+    })
+   .catch((err) => {
+    console.log(err)
+    });
+}
+
+ handleYup (card) {
+   console.log(`Yup for ${card.text}`)
+ }
+ handleNope (card) {
+   console.log(`Nope for ${card.text}`)
+ }
+ handleMaybe (card) {
+   console.log(`Maybe for ${card.text}`)
+ }
+ render() {
+   // If you want a stack of cards instead of one-per-one view, activate stack mode
+   // stack={true}
+   return (
+     <View style={{flex:1, backgroundColor:"green"}}>
+     //   <Text>This is above SwipeCards</Text>
+     <SwipeCards
+       containerStyle={{flex:1}}
+       cards={this.state.cards}
+       renderCard={(cardData) => <Card {...cardData} />}
+       renderNoMoreCards={() => <NoMoreCards />}
+
+       handleYup={this.handleYup}
+       handleNope={this.handleNope}
+       handleMaybe={this.handleMaybe}
+       hasMaybeAction
+     />
+   </View>
+   )
+ }
+}
 
 
 export default StackNavigator({
@@ -186,7 +278,7 @@ export default StackNavigator({
     screen: RegisterScreen,
   },
   User: {
-  screen:UserScreen,
+  screen: SwipeScreen,
 },
 }, {initialRouteName: 'Login'})
 
@@ -195,13 +287,29 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: 'black',
+    //backgroundColor: '#F5FCFF',
   },
   containerFull: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'stretch',
     backgroundColor: '#F5FCFF',
+  },
+  card: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 300,
+    height: 700,
+  },
+  noMoreCardsText: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontSize: 40,
+    // width: 300,
+    // height: 700,
+    backgroundColor: "black",
+    color:"white"
   },
   welcome: {
     fontSize: 20,
@@ -217,6 +325,7 @@ const styles = StyleSheet.create({
     fontSize: 36,
     textAlign: 'center',
     margin: 10,
+    color:'#D3D3D3'
   },
   button: {
     alignSelf: 'stretch',
@@ -229,12 +338,6 @@ const styles = StyleSheet.create({
   },
   buttonRed: {
     backgroundColor: '#FF585B',
-  },
-  buttonBlue: {
-    backgroundColor: '#0074D9',
-  },
-  buttonGreen: {
-    backgroundColor: '#2ECC40'
   },
   buttonLabel: {
     textAlign: 'center',
