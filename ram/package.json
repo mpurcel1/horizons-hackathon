@@ -23,16 +23,15 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "expo": "^27.0.1",
     "express": "^4.16.3",
+    "mongoose": "^5.2.6",
     "nodemon": "^1.18.3",
     "react": "16.3.1",
     "react-native": "~0.55.2",
-<<<<<<< HEAD
-=======
     "react-native-swipe-gestures": "^1.0.2",
->>>>>>> 0f08d43c10163dfb00293d45f103ad55564aea31
     "react-navigation": "^2.10.0"
   }
 }

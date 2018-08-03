@@ -4,6 +4,7 @@ const path = require('path');
 const app = express();
 const mongoose = require('mongoose');
 
+
 //setup mongoose connection
 mongoose.connection.on('error', function() {
   console.log('error connecting to database');
@@ -46,6 +47,7 @@ app.post('/login', function(req, res) {
 
 
 app.post('/register', function(req, res) {
+  console.log(req.body);
   var newUser = new User({
     username: req.body.username,
     password: req.body.password,

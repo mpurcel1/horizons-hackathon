@@ -11,6 +11,7 @@ import {
   Button
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import axios from 'axios';
 
 
 
@@ -27,15 +28,15 @@ class RegisterScreen extends React.Component {
     }
   }
   register(){
-    fetch('/register',{
+    fetch('http://localhost:1337/register',{
       method:'POST',
       headers:{
         "Content-Type":"application/json"
       },
       body: JSON.stringify({
-        username:this.state.username,
-        password:this.state.password,
-        resume:this.state.resume
+        username: this.state.username,
+        password: this.state.password,
+        resume: this.state.resume
       })
     })
     .then((response)=>response.json())
@@ -55,18 +56,18 @@ class RegisterScreen extends React.Component {
     return (
       <View style={styles.container}>
         <TextInput
-          style={{height:40}}
+          style={{height:40,width:100}}
           placeholder='Enter your username'
           onChangeText={(text)=>this.setState({username:text})}
         />
         <TextInput
-          style={{height:40}}
+          style={{height:40, width:100}}
           secureTextEntry={true}
           placeholder='Enter your password'
           onChangeText={(text)=>this.setState({password:text})}
         />
         <TextInput
-          style={{height:40}}
+          style={{height:40, width:100}}
           secureTextEntry={true}
           placeholder='Enter link to your resume'
           onChangeText={(text)=>this.setState({resume:text})}
@@ -92,7 +93,7 @@ class LoginScreen extends React.Component {
   };
 
   login(username,password){
-    return fetch('/login',{
+    return fetch('http://localhost:1337/login',{
       method:'POST',
       headers:{
         "Content-Type":"application/json"
@@ -147,12 +148,12 @@ class LoginScreen extends React.Component {
       <View style={styles.container}>
         <Text style={styles.textBig}>Login to Hinder!</Text>
         <TextInput
-          style={{height:40}}
+          style={{height:40, width:200}}
           placeholder='Enter your username'
           onChangeText={(text)=>this.setState({username:text})}
         />
         <TextInput
-          style={{height:40}}
+          style={{height:40, width:200}}
           secureTextEntry={true}
           placeholder='Enter your password'
           onChangeText={(text)=>this.setState({password:text})}
@@ -175,15 +176,7 @@ class UserScreen extends React.Component {
   }
 }
 
-// class App extends React.Component {
-//   render() {
-//     return (
-//       <View style={styles.container}>
-//         <RegisterScreen/>
-//       </View>
-//     );
-//   }
-// }
+
 
 export default StackNavigator({
   Login: {
@@ -195,31 +188,76 @@ export default StackNavigator({
   User: {
   screen:UserScreen,
 },
-}, {initialRouteName: 'Register'})
+}, {initialRouteName: 'Login'})
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
   },
+  containerFull: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    backgroundColor: '#F5FCFF',
+  },
+  welcome: {
+    fontSize: 20,
+    textAlign: 'center',
+    margin: 10,
+  },
+  instructions: {
+    textAlign: 'center',
+    color: '#333333',
+    marginBottom: 5,
+  },
+  textBig: {
+    fontSize: 36,
+    textAlign: 'center',
+    margin: 10,
+  },
+  button: {
+    alignSelf: 'stretch',
+    paddingTop: 10,
+    paddingBottom: 10,
+    marginTop: 10,
+    marginLeft: 5,
+    marginRight: 5,
+    borderRadius: 5
+  },
+  buttonRed: {
+    backgroundColor: '#FF585B',
+  },
+  buttonBlue: {
+    backgroundColor: '#0074D9',
+  },
+  buttonGreen: {
+    backgroundColor: '#2ECC40'
+  },
+  buttonLabel: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: 'white'
+  }
 });
 
-export default StackNavigator({
-  Home: {
-    screen: HomeScreen,
-  },
-  Login: {
-    screen: LoginScreen,
-  },
-  Register: {
-    screen: RegisterScreen,
-  },
-  Swipe: {
-    screen: SwipeScreen,
-  },
-  Feed: {
-    screen: FeedScreen
-  }
-}, {initialRouteName: 'Home'});
+
+// export default StackNavigator({
+//   Home: {
+//     screen: HomeScreen,
+//   },
+//   Login: {
+//     screen: LoginScreen,
+//   },
+//   Register: {
+//     screen: RegisterScreen,
+//   },
+//   Swipe: {
+//     screen: SwipeScreen,
+//   },
+//   Feed: {
+//     screen: FeedScreen
+//   }
+// }, {initialRouteName: 'Home'});
