@@ -6,7 +6,7 @@ if (!process.env.MONGODB_URI){
 }
 
 var userSchema = {
-  name: {
+  username: {
     type: String
   },
   password: {

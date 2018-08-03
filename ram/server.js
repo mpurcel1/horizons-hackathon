@@ -35,13 +35,19 @@ app.get('/allJobs', function(req, res) {
 });
 
 app.post('/login', function(req, res) {
-
+  User.findOne({username: req.body.username, password: req.body.password}, function(err, user) {
+    if (err) {
+      console.log("credentials are wrong");
+    } else {
+      res.json({success: true});
+    }
+  })
 });
 
 
 app.post('/register', function(req, res) {
   var newUser = new User({
-    name: req.body.name,
+    username: req.body.username,
     password: req.body.password,
     resume: req.body.resume
   });
@@ -50,6 +56,7 @@ app.post('/register', function(req, res) {
       console.log('could not save new user');
     }
   });
+  res.json({success: true});
 });
 
 
@@ -62,7 +69,7 @@ app.post('/newfollow', function(req, res) {
     if (err) {
       console.log('could not save new follow');
     }
-  })
+  });
 });
 
 
