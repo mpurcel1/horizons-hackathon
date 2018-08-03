@@ -28,6 +28,8 @@
     "express": "^4.16.3",
     "nodemon": "^1.18.3",
     "react": "16.3.1",
-    "react-native": "~0.55.2"
+    "react-native": "~0.55.2",
+    "react-native-swipe-gestures": "^1.0.2",
+    "react-navigation": "^2.10.0"
   }
 }

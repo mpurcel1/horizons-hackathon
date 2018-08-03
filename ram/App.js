@@ -1,7 +1,17 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  ListView,
+  Alert,
+  Button,
+  RefreshControl } from 'react-native';
+import { StackNavigator } from 'react-navigation';  
+import GestureRecognizer, {swipeDirections} from 'react-native-swipe-gestures';
 
-export default class App extends React.Component {
+class App extends React.Component {
   render() {
     return (
       <View style={styles.container}>
@@ -21,3 +31,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default StackNavigator({
+  Home: {
+    screen: HomeScreen,
+  },
+  Login: {
+    screen: LoginScreen,
+  },
+  Register: {
+    screen: RegisterScreen,
+  },
+  Swipe: {
+    screen: SwipeScreen,
+  },
+  Feed: {
+    screen: FeedScreen
+  }
+}, {initialRouteName: 'Home'});
