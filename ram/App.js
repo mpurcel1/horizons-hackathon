@@ -73,7 +73,6 @@ class RegisterScreen extends React.Component {
         />
         <TextInput
           style={{height:30, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
-          secureTextEntry={true}
           placeholder='Enter link to your resume'
           onChangeText={(text)=>this.setState({resume:text})}
         />
@@ -139,6 +138,14 @@ class LoginScreen extends React.Component {
       })
       .catch(err=>{console.log(err)})
   }
+
+  componentWillUnmount () {
+    if (this._confettiView)
+    {
+        this._confettiView.stopConfetti();
+    }
+}
+
 
   press() {
     return this.login(this.state.username, this.state.password)
@@ -280,7 +287,7 @@ export default StackNavigator({
   User: {
   screen: SwipeScreen,
 },
-}, {initialRouteName: 'Login'})
+}, {initialRouteName: 'User'})
 
 const styles = StyleSheet.create({
   container: {
