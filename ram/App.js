@@ -205,3 +205,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default StackNavigator({
+  Home: {
+    screen: HomeScreen,
+  },
+  Login: {
+    screen: LoginScreen,
+  },
+  Register: {
+    screen: RegisterScreen,
+  },
+  Swipe: {
+    screen: SwipeScreen,
+  },
+  Feed: {
+    screen: FeedScreen
+  }
+}, {initialRouteName: 'Home'});
