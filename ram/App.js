@@ -930,7 +930,10 @@ getMatches() {
 // }
 
  render(){
-
+   for (var i = 0; i < this.state.matches.length; i++) {
+     this.state.follows[i].match = this.state.matches[i];
+   }
+   console.log(this.state.follows);
    return(
      <View style={{paddingRight: 5, paddingLeft:5, flex: 1, backgroundColor:"#DCDCDC", alignItems:"center", justifyContent:"center"}}>
        <Confetti untilStopped={true} confettiCount={100000000000000000} ref={(node)=> this._confettiView = node}/>
@@ -964,7 +967,7 @@ getMatches() {
          renderItem={({item}) =>
          <View
            style=
-           {{
+           {[item.match ? {backgroundColor: '#FFD700'} : {backgroundColor: 'white'}, {
            flex:1,
            width:"100%",
            width:350,
@@ -978,11 +981,12 @@ getMatches() {
            flexDirection:"column",
            justifyContent:"flex-start",
            borderWidth: .5,
-           backgroundColor: "white",
+
+           // backgroundColor: {{item.match} ? "yellow" : "white"},
            marginTop: 5,
            marginBottom: 5,
-         }}>
-         <TouchableOpacity onPress={(event) => {alert("Apply Soon!")}}>
+         }]}>
+        
          <View style={{
            justifyContent:"center",
            alignItems: "flex-start",
