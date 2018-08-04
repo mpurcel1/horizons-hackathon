@@ -32,6 +32,7 @@
     "react": "16.3.1",
     "react-native": "~0.55.2",
     "react-native-confetti": "0.0.6",
+    "react-native-elements": "^0.19.1",
     "react-native-linear-gradient": "^2.4.0",
     "react-native-make-it-rain": "^0.9.1",
     "react-native-swipe-cards": "^0.1.1",

@@ -9,14 +9,58 @@ import {
   ListView,
   Alert,
   Button,
-  Image
+  Image,
+  FlatList
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import axios from 'axios';
 import Confetti from 'react-native-confetti';
 import MakeItRain from "react-native-make-it-rain";
 import SwipeCards from 'react-native-swipe-cards';
+import { Icon } from 'react-native-elements'
 //import LinearGradient from 'react-native-linear-gradient';
+
+
+import { ImagePicker } from 'expo';
+//import LinearGradient from 'react-native-linear-gradient';
+
+class ImagePickerExample extends React.Component {
+ state = {
+   image: null,
+ };
+
+ render() {
+   let { image } = this.state;
+
+   return (
+     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+       <Button
+         title="Pick an image from camera roll"
+         onPress={()=>this._pickImage()}
+       />
+       {image &&
+         <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
+     </View>
+   );
+ }
+
+ _pickImage = async () => {
+   let result = await ImagePicker.launchImageLibraryAsync({
+     allowsEditing: true,
+     aspect: [4, 3],
+   });
+
+   console.log(result);
+
+   if (!result.cancelled) {
+     this.setState({ image: result.uri });
+   }
+ };
+}
+
+
+
+
 
 
 
@@ -160,6 +204,7 @@ class UserRegisterScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
+        <ImagePickerExample />
         <Text style={[styles.textBig, {marginBottom: 20}]}>Job Seeker Registration</Text>
         <TextInput
           style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
@@ -561,6 +606,9 @@ class UserSwipeScreen extends React.Component {
        handleMaybe={this.handleMaybe}
        hasMaybeAction
      />
+     <TouchableOpacity style={{alignItems:"flex-end", paddingRight: 10, paddingBottom: 10}}>
+       <Icon name='arrow-forward' size={30} onPress={ () => {this.props.navigation.navigate('FeedScreen')} }>Feed</Icon>
+     </TouchableOpacity>,
    </View>
    )
  }
@@ -632,8 +680,6 @@ class EmployerSwipeScreen extends React.Component {
  componentDidMount() {
     AsyncStorage.getItem('recruiter')
      .then(result => {
-       console.log(result);
-       console.log('result');
        var parsedResult = JSON.parse(result);
        var username = parsedResult.username;
        return username;
@@ -667,7 +713,7 @@ class EmployerSwipeScreen extends React.Component {
 }
 
  handleYup (card) {
-   AsyncStorage.getItem('user')
+   AsyncStorage.getItem('recruiter')
      .then(result => {
        var parsedResult = JSON.parse(result);
        var username = parsedResult.username;
@@ -693,7 +739,7 @@ class EmployerSwipeScreen extends React.Component {
 
 
  handleMaybe (card) {
-   AsyncStorage.getItem('user')
+   AsyncStorage.getItem('recruiter')
      .then(result => {
        var parsedResult = JSON.parse(result);
        var username = parsedResult.username;
@@ -810,52 +856,121 @@ class FeedScreen extends React.Component {
  constructor(props){
    super(props);
    this.state={
-     follows:[
-       {title: "Software Engineer", company: "Google", description: "Code all day everyday", logo: "https://cdn.vox-cdn.com/thumbor/Pkmq1nm3skO0-j693JTMd7RL0Zk=/0x0:2012x1341/1200x800/filters:focal(0x0:2012x1341)/cdn.vox-cdn.com/uploads/chorus_image/image/47070706/google2.0.0.jpg"}
-     ],
+     follows:[],
      matches: []
    }
  }
 
  static navigationOptions = (props) => ({
-   headerLeft: <TouchableOpacity style={{alignItems:"center"}}>
-     <Text style={{fontSize: 20, fontWeight:"bold", color: "white", borderRadius:2, paddingTop:10, paddingBottom:10, paddingLeft:5, paddingRight:5}} onPress={ () => {props.navigation.navigate('Login')} }>Back To Job Search</Text>
+   headerLeft: <TouchableOpacity>
+     <Icon name="arrow-back" size={30} onPress={ () => {props.navigation.navigate('UserSwipe')} }></Icon>
    </TouchableOpacity>,
    headerStyle: {
-      backgroundColor: "#696969",
-      color:"#696969",
-      fontSize: 30,
+      backgroundColor: "#DCDCDC",
     },
  });
 
- press() {
-  this.props.navigation.navigate('Swipe')
- }
+getFollows() {
+  var self = this;
+  AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var username = parsedResult.username;
+      return username;
+    }).then((user) => {
+      fetch('https://hinder.herokuapp.com/follow', {
+        method: 'POST',
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+          user:user
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+          self.setState({
+            follows: responseJson
+          })
+       })
+      .catch((err) => {
+       console.log(err)
+       });
+    })
+    .catch(err=>{console.log(err)})
+
+}
+
+getMatches() {
+  var self = this;
+  AsyncStorage.getItem('user')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var username = parsedResult.username;
+      return username;
+    }).then((user) => {
+      fetch('https://hinder.herokuapp.com/apply', {
+        method: 'POST',
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+          user:user
+        })
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+          self.setState({
+            follows: responseJson
+          })
+       })
+      .catch((err) => {
+       console.log(err)
+       });
+    })
+    .catch(err=>{console.log(err)})
+}
 
 componentDidMount() {
-  this.props.navigation.setParams({
-  onLeftPress: this.press.bind(this)
-})
-if (this._confettiView) {
-  this._confettiView.startConfetti();
-}
+  var self = this;
+  fetch('https://hinder.herokuapp.com/follow', {
+    method: 'GET',
+  })
+  .then((response) => response.json())
+  .then((responseJson) => {
+      self.setState({
+        follows: responseJson
+      })
+   })
+  .catch((err) => {
+   console.log(err)
+   });
+  if (this._confettiView) {
+    this._confettiView.startConfetti();
+  }
 }
 
  render(){
 
    return(
-     <View style={{flex: 1, backgroundColor:"#696969", alignItems:"center", justifyContent:"center"}}>
+     <View style={{paddingRight: 5, paddingLeft:5, flex: 1, backgroundColor:"#DCDCDC", alignItems:"center", justifyContent:"center"}}>
        <Confetti untilStopped={true} confettiCount={100000000000000000} ref={(node)=> this._confettiView = node}/>
      <Text
        style={{
          fontSize: 25,
          width:"100%",
-         fontWeight: "bold",
-         color: "white",
-         marginLeft: 5,
+         color: "#696969",
+         margin: 10,
+         textAlign: 'center'
        }}>
-         Interested Jobs
+       Jobs
        </Text>
+       <TouchableOpacity onPress={()=>this.getFollows()}>
+         <Text>Interested</Text>
+       </TouchableOpacity>
+       <TouchableOpacity onPress={()=>this.getMatches()}>
+         <Text>Applied</Text>
+       </TouchableOpacity>
      <FlatList
        data={this.state.follows}
          renderItem={({item}) =>
@@ -864,13 +979,13 @@ if (this._confettiView) {
            {{
            flex:1,
            width:"100%",
-           width:375,
+           width:350,
            // height: 200,
-           shadowColor: 'black', // IOS
-           shadowOffset: { height: 1, width: 1 }, // IOS
-           shadowOpacity: 1, // IOS
-           shadowRadius: 1, //IOS
-           borderRadius:10,
+           // shadowColor: 'black', // IOS
+           // shadowOffset: { height: 1, width: 1 }, // IOS
+           // shadowOpacity: 1, // IOS
+           // shadowRadius: 1, //IOS
+           borderRadius:15,
            alignItems: "flex-start",
            flexDirection:"column",
            justifyContent:"flex-start",
@@ -883,18 +998,16 @@ if (this._confettiView) {
          <View style={{
            justifyContent:"center",
            alignItems: "flex-start",
-           width: 375,
+           width: 350,
            borderRadius:10,
-           paddingRight: 5,
-           paddingLeft: 5,
-           paddingBottom: 5,
+           padding: 10,
            marginRight: 10,
            borderBottomWidth: .5,
          }}>
          <Text style={{
              fontWeight: "bold",
              textAlign: 'left',
-             marginBottom: 10,
+             marginBottom: 5,
              fontSize: 20,
            }}>{item.title}</Text>
            <Text style={{
@@ -905,8 +1018,8 @@ if (this._confettiView) {
            </Text>
          </View></TouchableOpacity>
 
-         <View style={{height: 120, backgroundColor: 'white', alignItems:"flex-start", borderRadius:10}}>
-           <Image style={{width: 375, height:120, flex:1, borderRadius:10}} source={{uri:item.logo}}/>
+         <View style={{height: 120, alignItems:"flex-start", borderRadius:10}}>
+           <Image style={{width: 350, height:120, flex:1, borderRadius:10, resizeMode: 'contain'}} source={{uri:item.logo}}/>
          </View>
 
 
