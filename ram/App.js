@@ -986,7 +986,7 @@ getMatches() {
            marginTop: 5,
            marginBottom: 5,
          }]}>
-        
+
          <View style={{
            justifyContent:"center",
            alignItems: "flex-start",
@@ -1008,7 +1008,7 @@ getMatches() {
              }}>
              {item.description}
            </Text>
-         </View></TouchableOpacity>
+         </View>
 
          <View style={{height: 120, alignItems:"flex-start", borderRadius:10, padding: 10}}>
            <Image style={{width: 350, height:120, flex:1, borderRadius:10, resizeMode: 'contain'}} source={{uri:item.logo}}/>
