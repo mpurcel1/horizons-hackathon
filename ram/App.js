@@ -720,51 +720,29 @@ class EmployerSwipeScreen extends React.Component {
 
 }
 
- handleYup (card) {
-   AsyncStorage.getItem('recruiter')
-     .then(result => {
-       var parsedResult = JSON.parse(result);
-       var username = parsedResult.username;
-       return username;
-     }).then((user) => {
-       fetch('https://hinder.herokuapp.com/newfollow',{
-         method:'POST',
-         headers:{
-           "Content-Type":"application/json"
-         },
-         body: JSON.stringify({
-           user: user,
-           job: card
-         })
-       })
-     })
-     .catch(err=>{console.log(err)})
- }
+handleYup (card) {
+  AsyncStorage.getItem('recruiter')
+    .then(result => {
+      var parsedResult = JSON.parse(result);
+      var username = parsedResult.username;
+      return username;
+    }).then((user) => {
+      fetch('https://hinder.herokuapp.com/match',{
+        method:'POST',
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body: JSON.stringify({
+          user: card.username,
+          job: user
+        })
+      })
+    })
+    .catch(err=>{console.log(err)})
+}
 
  handleNope (card) {
    console.log(`Nope for ${card.text}`)
- }
-
-
- handleMaybe (card) {
-   AsyncStorage.getItem('recruiter')
-     .then(result => {
-       var parsedResult = JSON.parse(result);
-       var username = parsedResult.username;
-       return username;
-     }).then((user) => {
-       fetch('https://hinder.herokuapp.com/newapply',{
-         method:'POST',
-         headers:{
-           "Content-Type":"application/json"
-         },
-         body: JSON.stringify({
-           user: user,
-           job: card
-         })
-       })
-     })
-     .catch(err=>{console.log(err)})
  }
 
 
@@ -784,6 +762,7 @@ class EmployerSwipeScreen extends React.Component {
        handleYup={this.handleYup}
        handleNope={this.handleNope}
        handleMaybe={this.handleMaybe}
+       yupText={'Interested'}
        hasMaybeAction
      />
    </View>
@@ -933,7 +912,8 @@ getMatches() {
       .then((responseJson) => {
         console.log(responseJson);
           self.setState({
-            follows: responseJson
+            follows: responseJson.job,
+            matches: responseJson.bool
           })
        })
       .catch((err) => {
@@ -964,15 +944,16 @@ getMatches() {
        }}>
        Jobs
        </Text>
-       <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-         <View style={{marginLeft: 5, }}>
-           <TouchableOpacity  onPress={()=>this.getFollows()}>
-             <Text style={{}}>Interested</Text>
+       <View style={{display:'flex', flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10}}>
+         <View style={{backgroundColor: '#708090', padding: 5, margin: 5, borderRadius: 5, alignSelf: 'stretch'}}>
+           <TouchableOpacity onPress={()=>this.getFollows()}>
+             <Text style={{fontSize: 20}}>Interested</Text>
            </TouchableOpacity>
          </View>
-         <View style={{marginRight: 5}}>
+         <View style={{width: 40}}></View>
+         <View style={{backgroundColor: '#708090', padding: 5, margin: 5, borderRadius: 5, alignSelf: 'stretch'}}>
            <TouchableOpacity  onPress={()=>this.getMatches()}>
-             <Text style={{}}>Applied</Text>
+             <Text style={{fontSize: 20}}>Applied</Text>
            </TouchableOpacity>
          </View>
 
@@ -1001,7 +982,7 @@ getMatches() {
            marginTop: 5,
            marginBottom: 5,
          }}>
-         <TouchableOpacity onPress={(event) => {alert("Apply to Soon!")}}>
+         <TouchableOpacity onPress={(event) => {alert("Apply Soon!")}}>
          <View style={{
            justifyContent:"center",
            alignItems: "flex-start",
@@ -1025,7 +1006,7 @@ getMatches() {
            </Text>
          </View></TouchableOpacity>
 
-         <View style={{height: 120, alignItems:"flex-start", borderRadius:10}}>
+         <View style={{height: 120, alignItems:"flex-start", borderRadius:10, padding: 10}}>
            <Image style={{width: 350, height:120, flex:1, borderRadius:10, resizeMode: 'contain'}} source={{uri:item.logo}}/>
          </View>
 
