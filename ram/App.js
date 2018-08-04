@@ -18,44 +18,58 @@ import Confetti from 'react-native-confetti';
 import MakeItRain from "react-native-make-it-rain";
 import SwipeCards from 'react-native-swipe-cards';
 import { Icon } from 'react-native-elements'
-//import LinearGradient from 'react-native-linear-gradient';
-
-
 import { ImagePicker } from 'expo';
-//import LinearGradient from 'react-native-linear-gradient';
 
-class ImagePickerExample extends React.Component {
- state = {
-   image: null,
- };
 
- render() {
-   let { image } = this.state;
 
-   return (
-     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-       <Button
-         title="Pick an image from camera roll"
-         onPress={()=>this._pickImage()}
-       />
-       {image &&
-         <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />}
-     </View>
-   );
+const { Permissions } = Expo;
+
+class CameraRoll extends React.Component {
+ constructor(props) {
+   super(props);
+   this.state = {
+     image: null,
+     hasCameraPermission: null,
+     hasRollPermission: null,
+   };
  }
 
- _pickImage = async () => {
-   let result = await ImagePicker.launchImageLibraryAsync({
-     allowsEditing: true,
-     aspect: [4, 3],
-   });
+render() {
+  let { image } = this.state;
 
-   console.log(result);
+  return (
+    <View style={{alignItems: 'space-between', justifyContent: 'flex-start'}}>
+      <TouchableOpacity style={[styles.button, {backgroundColor: '#A9A9A9', padding: 5, width: '80%', borderRadius: 20}]} onPress={()=>this._pickImage()}>
+        <Text style={styles.buttonLabel}>Upload a Picture of your Resume!</Text>
+      </TouchableOpacity>
+      {/* {image &&
+        <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />} */}
+    </View>
+  );
+}
 
-   if (!result.cancelled) {
-     this.setState({ image: result.uri });
-   }
- };
+_pickImage = async () => {
+
+const { status } = await Permissions.askAsync(Permissions.CAMERA);
+const { status_roll } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+
+console.log('camera: '+status);
+console.log('roll: '+status_roll);
+this.setState({ hasCameraPermission: status === 'granted' });
+this.setState({ hasRollPermission: status_roll === 'granted' });
+
+  let result = await ImagePicker.launchImageLibraryAsync({
+    allowsEditing: true,
+    aspect: [4, 3],
+  });
+
+  console.log(result);
+
+  if (!result.cancelled) {
+    this.setState({ image: result.uri });
+  }
+  this.props.updateResume(result.uri);
+};
 }
 
 
@@ -177,7 +191,8 @@ class UserRegisterScreen extends React.Component {
     }
   }
   register(){
-    fetch('https://hinder.herokuapp.com/register',{
+    console.log("resume is " ,this.state.resume);
+    fetch('https://hinder.herokuapp.com/register/user',{
       method:'POST',
       headers:{
         "Content-Type":"application/json"
@@ -201,10 +216,17 @@ class UserRegisterScreen extends React.Component {
       console.log('err',err);
     });
   }
+
+  updateResume(url) {
+     this.setState({
+       resume: url
+     });
+   }
+
   render() {
     return (
       <View style={styles.container}>
-        <ImagePickerExample />
+
         <Text style={[styles.textBig, {marginBottom: 20}]}>Job Seeker Registration</Text>
         <TextInput
           style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
@@ -217,11 +239,7 @@ class UserRegisterScreen extends React.Component {
           placeholder='Enter your password'
           onChangeText={(text)=>this.setState({password:text})}
         />
-        <TextInput
-          style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
-          placeholder='Enter link to your resume'
-          onChangeText={(text)=>this.setState({resume:text})}
-        />
+        <CameraRoll updateResume={(url)=>this.updateResume(url)}/>
         <TouchableOpacity onPress={this.register.bind(this)} style={styles.button, {height: 35, alignItems: 'center', justifyContent: 'center', padding: 4, marginTop: 17, backgroundColor: '#FB6567', width: '40%', borderRadius: 360}}>
           <Text style={styles.buttonLabel}>Submit</Text>
         </TouchableOpacity>
@@ -554,7 +572,7 @@ class UserSwipeScreen extends React.Component {
          },
          body: JSON.stringify({
            user: user,
-           job: card
+           job: card.username
          })
        })
      })
@@ -622,9 +640,10 @@ class UserCard extends React.Component {
  }
 
  render() {
+   console.log(this.props.resume)
    return (
      <View style={[styles.card, {backgroundColor: 'white', alignItems: 'flex-start'}]}>
-       <Text style={{marginLeft: 20, marginTop: 20, marginBottom: 7, fontSize: 35}}>{this.props.username}</Text>
+       <Text style={{marginLeft: 20, marginTop: 20, marginBottom: 7, fontSize: 35}}>Applicant</Text>
        <View
          style={{
            borderBottomColor: 'black',
@@ -632,19 +651,8 @@ class UserCard extends React.Component {
            width: 325,
          }}
        />
-       <View style={{height: "30%", alignSelf: 'center', padding: 20}}>
-         {/* <Image style={{flex: 1, width: 300, height: '50%', resizeMode: 'contain'}} source={{uri:this.props.logo}}/> */}
-       </View>
-       <View
-         style={{
-           borderBottomColor: 'black',
-           borderBottomWidth: 1,
-           width: 325
-         }}
-       />
-       <View>
-         <Text style={{marginLeft: 15, fontSize: 25, marginTop: 10}}>{this.props.password}</Text>
-         <Text style={{marginBottom: 15, marginLeft: 15, marginRight: 15, fontSize: 14}}>{this.props.resume}</Text>
+       <View style={{flex: 1, height: "70%", alignSelf: 'center', padding: 20}}>
+         <Image style={{width: 300, height: '100%', resizeMode: 'contain'}} source={{uri:this.props.resume}}/>
        </View>
     </View>
    )
@@ -878,6 +886,7 @@ getFollows() {
       var username = parsedResult.username;
       return username;
     }).then((user) => {
+      console.log('user is ', user)
       fetch('https://hinder.herokuapp.com/follow', {
         method: 'POST',
         headers:{
@@ -889,6 +898,7 @@ getFollows() {
       })
       .then((response) => response.json())
       .then((responseJson) => {
+        console.log(responseJson);
           self.setState({
             follows: responseJson
           })
@@ -909,6 +919,7 @@ getMatches() {
       var username = parsedResult.username;
       return username;
     }).then((user) => {
+      console.log('user is ', user)
       fetch('https://hinder.herokuapp.com/apply', {
         method: 'POST',
         headers:{
@@ -920,6 +931,7 @@ getMatches() {
       })
       .then((response) => response.json())
       .then((responseJson) => {
+        console.log(responseJson);
           self.setState({
             follows: responseJson
           })
@@ -931,24 +943,11 @@ getMatches() {
     .catch(err=>{console.log(err)})
 }
 
-componentDidMount() {
-  var self = this;
-  fetch('https://hinder.herokuapp.com/follow', {
-    method: 'GET',
-  })
-  .then((response) => response.json())
-  .then((responseJson) => {
-      self.setState({
-        follows: responseJson
-      })
-   })
-  .catch((err) => {
-   console.log(err)
-   });
-  if (this._confettiView) {
-    this._confettiView.startConfetti();
-  }
-}
+// componentDidMount() {
+//   if (this._confettiView) {
+//     this._confettiView.startConfetti();
+//   }
+// }
 
  render(){
 
@@ -965,12 +964,20 @@ componentDidMount() {
        }}>
        Jobs
        </Text>
-       <TouchableOpacity onPress={()=>this.getFollows()}>
-         <Text>Interested</Text>
-       </TouchableOpacity>
-       <TouchableOpacity onPress={()=>this.getMatches()}>
-         <Text>Applied</Text>
-       </TouchableOpacity>
+       <View style={{flexDirection: 'row', justifyContent: 'center'}}>
+         <View style={{marginLeft: 5, }}>
+           <TouchableOpacity  onPress={()=>this.getFollows()}>
+             <Text style={{}}>Interested</Text>
+           </TouchableOpacity>
+         </View>
+         <View style={{marginRight: 5}}>
+           <TouchableOpacity  onPress={()=>this.getMatches()}>
+             <Text style={{}}>Applied</Text>
+           </TouchableOpacity>
+         </View>
+
+       </View>
+
      <FlatList
        data={this.state.follows}
          renderItem={({item}) =>
