@@ -31,6 +31,10 @@ class EmployerRegisterScreen extends React.Component {
     this.state = {
       username:'',
       password:'',
+      title: '',
+      company: '',
+      description: '',
+      logo: ''
     }
   }
   register(){
@@ -42,6 +46,10 @@ class EmployerRegisterScreen extends React.Component {
       body: JSON.stringify({
         username: this.state.username,
         password: this.state.password,
+        title: this.state.title,
+        company: this.state.company,
+        description: this.state.description,
+        logo: this.state.logo
       })
     })
     .then((response)=>response.json())
@@ -59,18 +67,41 @@ class EmployerRegisterScreen extends React.Component {
   }
   render() {
     return (
-      <View style={styles.container}>
+      <View style={{flex: 1,
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          backgroundColor: '#696969'}}>
         <Text style={[styles.textBig, {marginBottom: 20}]}>Employer Registration</Text>
         <TextInput
-          style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
+          style={{height:30, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
           placeholder='Enter your username'
           onChangeText={(text)=>this.setState({username:text})}
         />
         <TextInput
-          style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
+          style={{height:30, width:250,backgroundColor:'white', margin:5, marginBottom: 20, textAlign:'center', borderRadius: 15}}
           secureTextEntry={true}
           placeholder='Enter your password'
           onChangeText={(text)=>this.setState({password:text})}
+        />
+        <TextInput
+          style={{height:30, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
+          placeholder='Enter the job title'
+          onChangeText={(text)=>this.setState({title:text})}
+        />
+        <TextInput
+          style={{height:30, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
+          placeholder='Enter the company'
+          onChangeText={(text)=>this.setState({company:text})}
+        />
+        <TextInput
+          style={{height:60, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
+          placeholder='Enter the job description'
+          onChangeText={(text)=>this.setState({description:text})}
+        />
+        <TextInput
+          style={{height:30, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
+          placeholder='Enter a logo image URL'
+          onChangeText={(text)=>this.setState({logo:text})}
         />
         <TouchableOpacity onPress={this.register.bind(this)} style={styles.button, {height: 35, alignItems: 'center', justifyContent: 'center', padding: 4, marginTop: 17, backgroundColor: '#FB6567', width: '40%', borderRadius: 360}}>
           <Text style={styles.buttonLabel}>Submit</Text>
@@ -79,6 +110,8 @@ class EmployerRegisterScreen extends React.Component {
     )
   }
 }
+
+
 
 
 
@@ -502,7 +535,7 @@ class UserSwipeScreen extends React.Component {
          },
          body: JSON.stringify({
            user: user,
-           job: card
+           job: card.username
          })
        })
      })
@@ -535,7 +568,40 @@ class UserSwipeScreen extends React.Component {
 
 
 
+class UserCard extends React.Component {
+ constructor(props) {
+   super(props);
+ }
 
+ render() {
+   return (
+     <View style={[styles.card, {backgroundColor: 'white', alignItems: 'flex-start'}]}>
+       <Text style={{marginLeft: 20, marginTop: 20, marginBottom: 7, fontSize: 35}}>{this.props.username}</Text>
+       <View
+         style={{
+           borderBottomColor: 'black',
+           borderBottomWidth: 1,
+           width: 325,
+         }}
+       />
+       <View style={{height: "30%", alignSelf: 'center', padding: 20}}>
+         {/* <Image style={{flex: 1, width: 300, height: '50%', resizeMode: 'contain'}} source={{uri:this.props.logo}}/> */}
+       </View>
+       <View
+         style={{
+           borderBottomColor: 'black',
+           borderBottomWidth: 1,
+           width: 325
+         }}
+       />
+       <View>
+         <Text style={{marginLeft: 15, fontSize: 25, marginTop: 10}}>{this.props.password}</Text>
+         <Text style={{marginBottom: 15, marginLeft: 15, marginRight: 15, fontSize: 14}}>{this.props.resume}</Text>
+       </View>
+    </View>
+   )
+ }
+}
 
 
 
@@ -553,7 +619,7 @@ class EmployerSwipeScreen extends React.Component {
     },
     headerRight:
       <TouchableOpacity onPress={()=>{
-        AsyncStorage.setItem('user',JSON.stringify({
+        AsyncStorage.setItem('recruiter',JSON.stringify({
           username:'',
           password:''
         }))
@@ -564,22 +630,40 @@ class EmployerSwipeScreen extends React.Component {
   });
 
  componentDidMount() {
-   fetch('https://hinder.herokuapp.com/allusers', {
-     method: 'GET',
+    AsyncStorage.getItem('recruiter')
+     .then(result => {
+       console.log(result);
+       console.log('result');
+       var parsedResult = JSON.parse(result);
+       var username = parsedResult.username;
+       return username;
+     }).then((user) => {
+       console.log(user);
+       fetch('https://hinder.herokuapp.com/allusers', {
+         method: 'POST',
+         headers:{
+           "Content-Type":"application/json"
+         },
+         body: JSON.stringify({
+           job: user
+         })
+         })
+       .then((response) => response.json())
+       .then((responseJson) => {
+           if (responseJson) {
+             console.log(responseJson);
+             this.setState({cards: responseJson})
+           } else {
+             alert("Login failed, try again")
+             this.props.navigation.navigate('Home')
+           }
+        })
+       .catch((err) => {
+        console.log(err)
+        });
      })
-   .then((response) => response.json())
-   .then((responseJson) => {
-       if (responseJson) {
-         console.log(responseJson);
-         this.setState({cards: responseJson})
-       } else {
-         alert("Login failed, try again")
-         this.props.navigation.navigate('Home')
-       }
-    })
-   .catch((err) => {
-    console.log(err)
-    });
+
+
 }
 
  handleYup (card) {
@@ -637,17 +721,17 @@ class EmployerSwipeScreen extends React.Component {
    return (
      <View style={{flex:1, backgroundColor:"#DCDCDC"}}>
      {/* //   <Text>This is above SwipeCards</Text> */}
-     {/* <SwipeCards
+     <SwipeCards
        containerStyle={{flex:1}}
        cards={this.state.cards}
-       renderCard={(cardData) => <Card {...cardData} />}
+       renderCard={(cardData) => <UserCard {...cardData} />}
        renderNoMoreCards={() => <NoMoreCards />}
 
        handleYup={this.handleYup}
        handleNope={this.handleNope}
        handleMaybe={this.handleMaybe}
        hasMaybeAction
-     /> */}
+     />
    </View>
    )
  }
