@@ -20,7 +20,72 @@ import SwipeCards from 'react-native-swipe-cards';
 
 
 
-class RegisterScreen extends React.Component {
+class EmployerRegisterScreen extends React.Component {
+  static navigationOptions = {
+    headerStyle: {
+      backgroundColor: '#696969',
+    }
+  };
+  constructor(){
+    super();
+    this.state = {
+      username:'',
+      password:'',
+    }
+  }
+  register(){
+    fetch('https://hinder.herokuapp.com/register/recruiter',{
+      method:'POST',
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    })
+    .then((response)=>response.json())
+    .then((responseJson) =>{
+      if (responseJson.success){
+        //<Text>{responseJson}</Text>
+        this.props.navigation.navigate('EmployerLogin');
+      } else{
+        console.log(responseJson);
+      }
+    })
+    .catch((err)=>{
+      console.log('err',err);
+    });
+  }
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text style={[styles.textBig, {marginBottom: 20}]}>Employer Registration</Text>
+        <TextInput
+          style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
+          placeholder='Enter your username'
+          onChangeText={(text)=>this.setState({username:text})}
+        />
+        <TextInput
+          style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
+          secureTextEntry={true}
+          placeholder='Enter your password'
+          onChangeText={(text)=>this.setState({password:text})}
+        />
+        <TouchableOpacity onPress={this.register.bind(this)} style={styles.button, {height: 35, alignItems: 'center', justifyContent: 'center', padding: 4, marginTop: 17, backgroundColor: '#FB6567', width: '40%', borderRadius: 360}}>
+          <Text style={styles.buttonLabel}>Submit</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+}
+
+
+
+
+
+
+class UserRegisterScreen extends React.Component {
   static navigationOptions = {
     headerStyle: {
       backgroundColor: '#696969',
@@ -50,7 +115,7 @@ class RegisterScreen extends React.Component {
     .then((responseJson) =>{
       if (responseJson.success){
         //<Text>{responseJson}</Text>
-        this.props.navigation.navigate('Login');
+        this.props.navigation.navigate('UserLogin');
       } else{
         console.log(responseJson);
       }
@@ -62,7 +127,7 @@ class RegisterScreen extends React.Component {
   render() {
     return (
       <View style={styles.container}>
-        <Text style={[styles.textBig, {marginBottom: 20}]}>Register</Text>
+        <Text style={[styles.textBig, {marginBottom: 20}]}>Job Seeker Registration</Text>
         <TextInput
           style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
           placeholder='Enter your username'
@@ -87,7 +152,8 @@ class RegisterScreen extends React.Component {
   }
 }
 
-class LoginScreen extends React.Component {
+
+class EmployerLoginScreen extends React.Component {
   constructor(){
     super();
     this.state={
@@ -102,7 +168,7 @@ class LoginScreen extends React.Component {
   };
 
   login(username,password){
-    return fetch('https://hinder.herokuapp.com/login',{
+    return fetch('https://hinder.herokuapp.com/login/recruiter',{
       method:'POST',
       headers:{
         "Content-Type":"application/json"
@@ -116,21 +182,18 @@ class LoginScreen extends React.Component {
 
   checkResponseAndGoToMainScreen(resp){
     if (resp.success){
-      AsyncStorage.setItem('user',JSON.stringify({
+      AsyncStorage.setItem('recruiter',JSON.stringify({
         username:this.state.username,
         password:this.state.password
       }))
-      this.props.navigation.navigate('User');
+      this.props.navigation.navigate('EmployerSwipe');
     } else{
       console.log(resp);
     }
   }
 
   componentDidMount(){
-    if (this._confettiView) {
-      this._confettiView.startConfetti();
-    }
-    AsyncStorage.getItem('user')
+    AsyncStorage.getItem('recruiter')
       .then(result => {
         var parsedResult = JSON.parse(result);
         var username = parsedResult.username;
@@ -144,14 +207,6 @@ class LoginScreen extends React.Component {
       .catch(err=>{console.log(err)})
   }
 
-  componentWillUnmount () {
-    if (this._confettiView)
-    {
-        this._confettiView.stopConfetti();
-    }
-}
-
-
   press() {
     return this.login(this.state.username, this.state.password)
       .then(resp => resp.json())
@@ -160,15 +215,13 @@ class LoginScreen extends React.Component {
   }
 
   register() {
-    this.props.navigation.navigate('Register');
+    this.props.navigation.navigate('EmployerRegister');
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <Confetti untilStopped={true} ref={(node)=> this._confettiView = node}/>
-        <MakeItRain numMoneys={20} moneyDimensions={{width: 100, height: 50}}/>
-        <Text style={[styles.textBig, {marginBottom: 20}]}>Hinder!</Text>
+        <Text style={[styles.textBig, {marginBottom: 20}]}>Employer Login</Text>
         <TextInput
           style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
           placeholder='Enter your username'
@@ -192,6 +245,115 @@ class LoginScreen extends React.Component {
     )
   }
 }
+
+
+
+
+
+
+
+
+
+class UserLoginScreen extends React.Component {
+  constructor(){
+    super();
+    this.state={
+      username:'',
+      password:'',
+    }
+  }
+  static navigationOptions = {
+    headerStyle: {
+      backgroundColor: '#696969',
+    }
+  };
+
+  login(username,password){
+    return fetch('https://hinder.herokuapp.com/login/user',{
+      method:'POST',
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body: JSON.stringify({
+        username:username,
+        password:password
+      })
+    })
+  }
+
+  checkResponseAndGoToMainScreen(resp){
+    if (resp.success){
+      AsyncStorage.setItem('user',JSON.stringify({
+        username:this.state.username,
+        password:this.state.password
+      }))
+      this.props.navigation.navigate('UserSwipe');
+    } else{
+      console.log(resp);
+    }
+  }
+
+  componentDidMount(){
+    AsyncStorage.getItem('user')
+      .then(result => {
+        var parsedResult = JSON.parse(result);
+        var username = parsedResult.username;
+        var password = parsedResult.password;
+        if (username && password) {
+          return this.login(username, password)
+            .then(resp => resp.json())
+            .then((respJson)=>this.checkResponseAndGoToMainScreen(respJson));
+        }
+      })
+      .catch(err=>{console.log(err)})
+  }
+
+
+  press() {
+    return this.login(this.state.username, this.state.password)
+      .then(resp => resp.json())
+      .then((respJson)=>this.checkResponseAndGoToMainScreen(respJson))
+      .catch(err=>{console.log(err)})
+  }
+
+  register() {
+    this.props.navigation.navigate('UserRegister');
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <Text style={[styles.textBig, {marginBottom: 20}]}>Job Seeker Login</Text>
+        <TextInput
+          style={{height:35, width:250,backgroundColor:'white', margin:5, textAlign:'center', borderRadius: 15}}
+          placeholder='Enter your username'
+          onChangeText={(text)=>this.setState({username:text})}
+        />
+        <TextInput
+          style={{height:35, width:250,backgroundColor:'white' , margin:5, textAlign:'center', borderRadius: 15}}
+          secureTextEntry={true}
+          placeholder='Enter your password'
+          onChangeText={(text)=>this.setState({password:text})}
+        />
+        <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 10}}>
+        <TouchableOpacity onPress={ () => {this.press()} } style={[styles.button, {backgroundColor: "#A9A9A9", width: '35%', borderRadius: 360}]}>
+          <Text style={styles.buttonLabel}>Login</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, {backgroundColor: '#FB6567', width: '35%', borderRadius: 360}]} onPress={ () => {this.register()} }>
+          <Text style={styles.buttonLabel}>Register</Text>
+        </TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+}
+
+
+
+
+
+
+
 
 class Card extends React.Component {
  constructor(props) {
@@ -228,11 +390,14 @@ class Card extends React.Component {
  }
 }
 
+
+
+
+
 class NoMoreCards extends React.Component {
  constructor(props) {
    super(props);
  }
-
  render() {
    return (
      <View>
@@ -242,12 +407,41 @@ class NoMoreCards extends React.Component {
  }
 }
 
-class SwipeScreen extends React.Component {
+
+
+
+
+
+class UserSwipeScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       cards: [],
     };
+  }
+
+  static navigationOptions  = (props) => ({
+    headerStyle: {
+     backgroundColor: '#DCDCDC',
+    },
+    headerRight:
+      <TouchableOpacity onPress={()=>{
+        AsyncStorage.setItem('user',JSON.stringify({
+          username:'',
+          password:''
+        }))
+        props.navigation.navigate('Home');
+      }}>
+        <Text style={{marginRight: 10}}>Logout</Text>
+      </TouchableOpacity>
+  });
+
+  logout() {
+    AsyncStorage.setItem('user',JSON.stringify({
+      username:'',
+      password:''
+    }))
+    this.props.navigation.navigate('Home');
   }
 
  componentDidMount() {
@@ -269,14 +463,54 @@ class SwipeScreen extends React.Component {
 }
 
  handleYup (card) {
-   console.log(`Yup for ${card.text}`)
+   AsyncStorage.getItem('user')
+     .then(result => {
+       var parsedResult = JSON.parse(result);
+       var username = parsedResult.username;
+       return username;
+     }).then((user) => {
+       fetch('https://hinder.herokuapp.com/newfollow',{
+         method:'POST',
+         headers:{
+           "Content-Type":"application/json"
+         },
+         body: JSON.stringify({
+           user: user,
+           job: card
+         })
+       })
+     })
+     .catch(err=>{console.log(err)})
  }
+
  handleNope (card) {
    console.log(`Nope for ${card.text}`)
  }
+
+
  handleMaybe (card) {
-   console.log(`Maybe for ${card.text}`)
+   AsyncStorage.getItem('user')
+     .then(result => {
+       var parsedResult = JSON.parse(result);
+       var username = parsedResult.username;
+       return username;
+     }).then((user) => {
+       fetch('https://hinder.herokuapp.com/newapply',{
+         method:'POST',
+         headers:{
+           "Content-Type":"application/json"
+         },
+         body: JSON.stringify({
+           user: user,
+           job: card
+         })
+       })
+     })
+     .catch(err=>{console.log(err)})
  }
+
+
+
  render() {
    // If you want a stack of cards instead of one-per-one view, activate stack mode
    // stack={true}
@@ -288,7 +522,7 @@ class SwipeScreen extends React.Component {
        cards={this.state.cards}
        renderCard={(cardData) => <Card {...cardData} />}
        renderNoMoreCards={() => <NoMoreCards />}
-
+       maybeText={'Apply'}
        handleYup={this.handleYup}
        handleNope={this.handleNope}
        handleMaybe={this.handleMaybe}
@@ -300,17 +534,216 @@ class SwipeScreen extends React.Component {
 }
 
 
+
+
+
+
+
+class EmployerSwipeScreen extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      cards: [],
+    };
+  }
+
+  static navigationOptions  = (props) => ({
+    headerStyle: {
+     backgroundColor: '#DCDCDC',
+    },
+    headerRight:
+      <TouchableOpacity onPress={()=>{
+        AsyncStorage.setItem('user',JSON.stringify({
+          username:'',
+          password:''
+        }))
+        props.navigation.navigate('Home');
+      }}>
+        <Text style={{marginRight: 10}}>Logout</Text>
+      </TouchableOpacity>
+  });
+
+ componentDidMount() {
+   fetch('https://hinder.herokuapp.com/allusers', {
+     method: 'GET',
+     })
+   .then((response) => response.json())
+   .then((responseJson) => {
+       if (responseJson) {
+         console.log(responseJson);
+         this.setState({cards: responseJson})
+       } else {
+         alert("Login failed, try again")
+         this.props.navigation.navigate('Home')
+       }
+    })
+   .catch((err) => {
+    console.log(err)
+    });
+}
+
+ handleYup (card) {
+   AsyncStorage.getItem('user')
+     .then(result => {
+       var parsedResult = JSON.parse(result);
+       var username = parsedResult.username;
+       return username;
+     }).then((user) => {
+       fetch('https://hinder.herokuapp.com/newfollow',{
+         method:'POST',
+         headers:{
+           "Content-Type":"application/json"
+         },
+         body: JSON.stringify({
+           user: user,
+           job: card
+         })
+       })
+     })
+     .catch(err=>{console.log(err)})
+ }
+
+ handleNope (card) {
+   console.log(`Nope for ${card.text}`)
+ }
+
+
+ handleMaybe (card) {
+   AsyncStorage.getItem('user')
+     .then(result => {
+       var parsedResult = JSON.parse(result);
+       var username = parsedResult.username;
+       return username;
+     }).then((user) => {
+       fetch('https://hinder.herokuapp.com/newapply',{
+         method:'POST',
+         headers:{
+           "Content-Type":"application/json"
+         },
+         body: JSON.stringify({
+           user: user,
+           job: card
+         })
+       })
+     })
+     .catch(err=>{console.log(err)})
+ }
+
+
+
+ render() {
+   // If you want a stack of cards instead of one-per-one view, activate stack mode
+   // stack={true}
+   return (
+     <View style={{flex:1, backgroundColor:"#DCDCDC"}}>
+     {/* //   <Text>This is above SwipeCards</Text> */}
+     {/* <SwipeCards
+       containerStyle={{flex:1}}
+       cards={this.state.cards}
+       renderCard={(cardData) => <Card {...cardData} />}
+       renderNoMoreCards={() => <NoMoreCards />}
+
+       handleYup={this.handleYup}
+       handleNope={this.handleNope}
+       handleMaybe={this.handleMaybe}
+       hasMaybeAction
+     /> */}
+   </View>
+   )
+ }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+class Home extends React.Component {
+  constructor(){
+    super();
+    this.state={
+      username:'',
+      password:'',
+    }
+  }
+  static navigationOptions = {
+    headerStyle: {
+      backgroundColor: '#696969',
+    }
+  };
+
+  componentDidMount(){
+    if (this._confettiView) {
+      this._confettiView.startConfetti();
+    }
+  }
+
+  componentWillUnmount () {
+    if (this._confettiView)
+    {
+        this._confettiView.stopConfetti();
+    }
+  }
+
+
+  employer() {
+    this.props.navigation.navigate('EmployerLogin');
+  }
+
+  seeker() {
+    this.props.navigation.navigate('UserLogin');
+  }
+
+  render() {
+    return (
+      <View style={styles.container}>
+        <Confetti confettiCount={10000000} untilStopped={true} ref={(node)=> this._confettiView = node}/>
+        <MakeItRain numMoneys={20} moneyDimensions={{width: 100, height: 50}}/>
+        <Text style={[styles.textBig, {marginBottom: 20}]}>Hinder!</Text>
+        <Text style={{textAlign: 'center', color:'white', fontSize: 16}}>I am a...</Text>
+        <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: 10}}>
+        <TouchableOpacity onPress={ () => {this.employer()} } style={[styles.button, {backgroundColor: "#A9A9A9", width: '35%', borderRadius: 360}]}>
+          <Text style={styles.buttonLabel}>Employer</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, {backgroundColor: '#FB6567', width: '35%', borderRadius: 360}]} onPress={ () => {this.seeker()} }>
+          <Text style={styles.buttonLabel}>Job Seeker</Text>
+        </TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+}
+
+
 export default StackNavigator({
-  Login: {
-    screen: LoginScreen,
+  Home: {
+    screen: Home
   },
-  Register: {
-    screen: RegisterScreen,
+  UserLogin: {
+    screen: UserLoginScreen,
   },
-  User: {
-  screen: SwipeScreen,
-},
-}, {initialRouteName: 'Login'})
+  UserRegister: {
+    screen: UserRegisterScreen,
+  },
+  EmployerRegister: {
+    screen: EmployerRegisterScreen
+  },
+  UserSwipe: {
+    screen: UserSwipeScreen,
+  },
+  EmployerSwipe: {
+    screen: EmployerSwipeScreen
+  },
+  EmployerLogin: {
+    screen: EmployerLoginScreen
+  }
+}, {initialRouteName: 'Home'})
 
 const styles = StyleSheet.create({
   container: {
