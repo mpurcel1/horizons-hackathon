@@ -434,7 +434,7 @@ class NoMoreCards extends React.Component {
  render() {
    return (
      <View>
-       <Text style={styles.noMoreCardsText}>No more cards</Text>
+       <Text style={styles.noMoreCardsText}>No more searches. Check back later!</Text>
      </View>
    )
  }
@@ -805,6 +805,126 @@ class Home extends React.Component {
 }
 
 
+
+class FeedScreen extends React.Component {
+ constructor(props){
+   super(props);
+   this.state={
+     follows:[
+       {title: "Software Engineer", company: "Google", description: "Code all day everyday", logo: "https://cdn.vox-cdn.com/thumbor/Pkmq1nm3skO0-j693JTMd7RL0Zk=/0x0:2012x1341/1200x800/filters:focal(0x0:2012x1341)/cdn.vox-cdn.com/uploads/chorus_image/image/47070706/google2.0.0.jpg"}
+     ],
+     matches: []
+   }
+ }
+
+ static navigationOptions = (props) => ({
+   headerLeft: <TouchableOpacity style={{alignItems:"center"}}>
+     <Text style={{fontSize: 20, fontWeight:"bold", color: "white", borderRadius:2, paddingTop:10, paddingBottom:10, paddingLeft:5, paddingRight:5}} onPress={ () => {props.navigation.navigate('Login')} }>Back To Job Search</Text>
+   </TouchableOpacity>,
+   headerStyle: {
+      backgroundColor: "#696969",
+      color:"#696969",
+      fontSize: 30,
+    },
+ });
+
+ press() {
+  this.props.navigation.navigate('Swipe')
+ }
+
+componentDidMount() {
+  this.props.navigation.setParams({
+  onLeftPress: this.press.bind(this)
+})
+if (this._confettiView) {
+  this._confettiView.startConfetti();
+}
+}
+
+ render(){
+
+   return(
+     <View style={{flex: 1, backgroundColor:"#696969", alignItems:"center", justifyContent:"center"}}>
+       <Confetti untilStopped={true} confettiCount={100000000000000000} ref={(node)=> this._confettiView = node}/>
+     <Text
+       style={{
+         fontSize: 25,
+         width:"100%",
+         fontWeight: "bold",
+         color: "white",
+         marginLeft: 5,
+       }}>
+         Interested Jobs
+       </Text>
+     <FlatList
+       data={this.state.follows}
+         renderItem={({item}) =>
+         <View
+           style=
+           {{
+           flex:1,
+           width:"100%",
+           width:375,
+           // height: 200,
+           shadowColor: 'black', // IOS
+           shadowOffset: { height: 1, width: 1 }, // IOS
+           shadowOpacity: 1, // IOS
+           shadowRadius: 1, //IOS
+           borderRadius:10,
+           alignItems: "flex-start",
+           flexDirection:"column",
+           justifyContent:"flex-start",
+           borderWidth: .5,
+           backgroundColor: "white",
+           marginTop: 5,
+           marginBottom: 5,
+         }}>
+         <TouchableOpacity onPress={(event) => {alert("Apply to Soon!")}}>
+         <View style={{
+           justifyContent:"center",
+           alignItems: "flex-start",
+           width: 375,
+           borderRadius:10,
+           paddingRight: 5,
+           paddingLeft: 5,
+           paddingBottom: 5,
+           marginRight: 10,
+           borderBottomWidth: .5,
+         }}>
+         <Text style={{
+             fontWeight: "bold",
+             textAlign: 'left',
+             marginBottom: 10,
+             fontSize: 20,
+           }}>{item.title}</Text>
+           <Text style={{
+               textAlign: 'left',
+               fontSize: 15,
+             }}>
+             {item.description}
+           </Text>
+         </View></TouchableOpacity>
+
+         <View style={{height: 120, backgroundColor: 'white', alignItems:"flex-start", borderRadius:10}}>
+           <Image style={{width: 375, height:120, flex:1, borderRadius:10}} source={{uri:item.logo}}/>
+         </View>
+
+
+         </View>
+       }
+     />
+
+   </View>
+   )
+ }
+ }
+
+
+
+
+
+
+
 export default StackNavigator({
   Home: {
     screen: Home
@@ -826,6 +946,9 @@ export default StackNavigator({
   },
   EmployerLogin: {
     screen: EmployerLoginScreen
+  },
+  FeedScreen: {
+    screen: FeedScreen
   }
 }, {initialRouteName: 'Home'})
 
@@ -855,6 +978,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     fontSize: 40,
+    textAlign: 'center',
     // width: 300,
     // height: 700,
     color:"white"
